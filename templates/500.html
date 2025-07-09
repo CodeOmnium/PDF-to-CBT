@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - PDF Question Extraction Tool{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 text-center">
+        <div class="error-page">
+            <div class="error-code mb-4">
+                <h1 class="display-1 text-danger">500</h1>
+            </div>
+            <div class="error-content">
+                <h2 class="mb-3">Internal Server Error</h2>
+                <p class="lead text-muted mb-4">
+                    Something went wrong on our end. We're working to fix this issue.
+                </p>
+                <div class="error-actions">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-home me-2"></i>Go Home
+                    </a>
+                    <button class="btn btn-outline-secondary btn-lg" onclick="window.location.reload()">
+                        <i class="fas fa-redo me-2"></i>Try Again
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Error Details (only in debug mode) -->
+        {% if config.DEBUG %}
+        <div class="error-details mt-5">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Error Details</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Debug information (only visible in development mode)</p>
+                    <pre class="bg-light p-3 rounded text-start">{{ error if error else 'No additional error information available' }}</pre>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Troubleshooting Tips -->
+        <div class="troubleshooting mt-5">
+            <h5 class="mb-3">Troubleshooting Tips:</h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-redo fa-2x text-info mb-2"></i>
+                            <h6>Refresh Page</h6>
+                            <p class="small text-muted">Sometimes a simple refresh can resolve temporary issues</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                            <h6>Wait a Moment</h6>
+                            <p class="small text-muted">The server might be temporarily overloaded</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-file-alt fa-2x text-success mb-2"></i>
+                            <h6>Check File Size</h6>
+                            <p class="small text-muted">Make sure uploaded PDFs are under 50MB</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact Information -->
+        <div class="contact-info mt-4">
+            <p class="text-muted">
+                If the problem persists, please contact support with the following information:
+            </p>
+            <div class="alert alert-info">
+                <small>
+                    <strong>Error Time:</strong> {{ moment().format('YYYY-MM-DD HH:mm:ss') }}<br>
+                    <strong>Page:</strong> {{ request.url if request else 'Unknown' }}<br>
+                    <strong>User Agent:</strong> {{ request.headers.get('User-Agent', 'Unknown') if request else 'Unknown' }}
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add some interactive elements
+document.addEventListener('DOMContentLoaded', function() {
+    // Add pulsing animation to the 500 number
+    const errorCode = document.querySelector('.error-code h1');
+    if (errorCode) {
+        errorCode.style.animation = 'pulse 2s ease-in-out infinite';
+    }
+    
+    // Auto-refresh option
+    let autoRefreshTimer;
+    
+    function startAutoRefresh() {
+        let countdown = 30;
+        const button = document.createElement('button');
+        button.className = 'btn btn-outline-info btn-sm mt-3';
+        button.innerHTML = `Auto-refresh in ${countdown}s <i class="fas fa-times ms-2"></i>`;
+        
+        const errorContent = document.querySelector('.error-content');
+        errorContent.appendChild(button);
+        
+        autoRefreshTimer = setInterval(() => {
+            countdown--;
+            if (countdown <= 0) {
+                window.location.reload();
+            } else {
+                button.innerHTML = `Auto-refresh in ${countdown}s <i class="fas fa-times ms-2"></i>`;
+            }
+        }, 1000);
+        
+        button.addEventListener('click', () => {
+            clearInterval(autoRefreshTimer);
+            button.remove();
+        });
+    }
+    
+    // Start auto-refresh after 5 seconds
+    setTimeout(startAutoRefresh, 5000);
+});
+
+// Add CSS animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    .error-page {
+        padding: 2rem 0;
+    }
+    
+    .troubleshooting .card {
+        transition: transform 0.2s ease;
+    }
+    
+    .troubleshooting .card:hover {
+        transform: translateY(-5px);
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

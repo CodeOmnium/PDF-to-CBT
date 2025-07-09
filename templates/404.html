@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found - PDF Question Extraction Tool{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 text-center">
+        <div class="error-page">
+            <div class="error-code mb-4">
+                <h1 class="display-1 text-primary">404</h1>
+            </div>
+            <div class="error-content">
+                <h2 class="mb-3">Page Not Found</h2>
+                <p class="lead text-muted mb-4">
+                    The page you're looking for doesn't exist or has been moved.
+                </p>
+                <div class="error-actions">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-home me-2"></i>Go Home
+                    </a>
+                    <a href="{{ url_for('all_tests') }}" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-list me-2"></i>View Tests
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Helpful Links -->
+        <div class="helpful-links mt-5">
+            <h5 class="mb-3">You might be looking for:</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-upload fa-2x text-primary mb-2"></i>
+                            <h6>Upload PDF</h6>
+                            <p class="small text-muted">Create a new test by uploading a PDF with pre-drawn boxes</p>
+                            <a href="{{ url_for('upload_pdf') }}" class="btn btn-sm btn-outline-primary">Upload</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-play fa-2x text-success mb-2"></i>
+                            <h6>Take Test</h6>
+                            <p class="small text-muted">Browse available tests and start practicing</p>
+                            <a href="{{ url_for('all_tests') }}" class="btn btn-sm btn-outline-success">Browse Tests</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add some interactive elements
+document.addEventListener('DOMContentLoaded', function() {
+    // Add floating animation to the 404 number
+    const errorCode = document.querySelector('.error-code h1');
+    if (errorCode) {
+        errorCode.style.animation = 'float 3s ease-in-out infinite';
+    }
+});
+
+// Add CSS animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+    
+    .error-page {
+        padding: 2rem 0;
+    }
+    
+    .helpful-links .card {
+        transition: transform 0.2s ease;
+    }
+    
+    .helpful-links .card:hover {
+        transform: translateY(-5px);
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

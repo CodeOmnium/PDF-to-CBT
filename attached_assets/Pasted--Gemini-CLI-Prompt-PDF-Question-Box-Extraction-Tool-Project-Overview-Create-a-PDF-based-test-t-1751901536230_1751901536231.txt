@@ -1,0 +1,385 @@
+# Gemini CLI Prompt: PDF Question Box Extraction Tool
+
+## Project Overview
+Create a PDF-based test tool for JEE Main/Advanced where users pre-draw rectangular boxes around questions in the PDF (using any PDF editor), then upload the PDF. The tool automatically detects these boxes, extracts each as an image, analyzes the question type, and displays it with appropriate input interface. Designed for maximum accuracy with pre-boxed questions for 5 users.
+
+## Core Requirements
+
+### 1. Automatic Box Detection Engine
+```
+Build a system to automatically detect pre-drawn boxes in PDFs:
+- Detect rectangular shapes/annotations in PDF
+- Identify box coordinates and boundaries
+- Support various box types: drawn rectangles, highlight boxes, annotation boxes
+- Handle different box colors and line styles
+- Extract box metadata (position, size, page number)
+- Sort boxes by position (top-to-bottom, left-to-right)
+- Handle overlapping or nested boxes
+- Support boxes created by different PDF editors (Adobe, Foxit, etc.)
+- Validate box detection accuracy
+- Generate box inventory with coordinates
+```
+
+### 2. Image Extraction Engine
+```
+Extract question boxes as high-quality images:
+- Crop PDF regions based on box coordinates
+- Maintain original resolution and quality
+- Support various zoom levels (100%, 150%, 200%)
+- Extract as PNG/JPEG with transparency support
+- Preserve mathematical symbols and diagrams
+- Handle rotated or skewed boxes
+- Apply image enhancement (contrast, brightness)
+- Support batch extraction of all boxes
+- Maintain question numbering and sequence
+- Export images with metadata (coordinates, page number)
+```
+
+### 3. Question Type Analysis Engine
+```
+Analyze extracted question box images to determine type:
+
+SCQ (Single Correct Questions):
+- Detect text pattern: Question + exactly 4 options (A), (B), (C), (D)
+- Look for option formatting patterns
+- Confirm only one correct answer expected
+- Check for standard JEE question structure
+
+MCQ (Multiple Correct Questions):
+- Detect instruction text: "One or more correct", "Multiple correct"
+- Identify 4 options with multiple answer possibility
+- Look for specific instruction keywords
+- Validate against standard MCQ patterns
+
+Integer Type Questions:
+- Detect absence of multiple choice options
+- Look for numerical answer requirements
+- Check for integer/decimal input instructions
+- Identify range specifications (0-9999)
+- Detect phrases like "answer to the nearest integer"
+
+Match the Column:
+- Detect two-column structure (Column-I, Column-II)
+- Identify matching items in each column
+- Look for combination options (A-p, B-q, C-r, D-s)
+- Validate table/column structure
+- Check for standard matching instructions
+
+Analysis Methods:
+- OCR using Tesseract with mathematical symbol recognition
+- Pattern matching with regex for question formats
+- Layout analysis using OpenCV for structure detection
+- Text classification using lightweight NLP models
+- Confidence scoring for each detection method
+```
+
+### 4. User Interface for Question Display
+```
+Create responsive interfaces for each question type:
+
+Universal Features:
+- Display extracted question image with zoom capability
+- Show question number and navigation
+- Preserve mathematical formatting and symbols
+- Timer display and question tracking
+- Save/review functionality
+
+SCQ Interface:
+- Radio buttons for options (A), (B), (C), (D)
+- Clear selection and change answer options
+- Highlight selected answer
+
+MCQ Interface:
+- Checkboxes for options (A), (B), (C), (D)
+- Allow multiple selections
+- Show selection count
+- Clear all selections option
+
+Integer Interface:
+- Number input box with validation
+- Range checking (0-9999 typical)
+- Decimal/integer format validation
+- Clear input functionality
+
+Match the Column Interface:
+- Two-column display with items
+- Dropdown matching interface for each item
+- Drag-and-drop alternative
+- Validation for complete matching
+- Clear all matches option
+```
+
+### 5. Marking Scheme Implementation
+```
+Implement accurate marking schemes for each test type:
+
+JEE Main Marking:
+- SCQ: +4 correct, -1 incorrect, 0 unattempted
+- MCQ: +4 all correct, proportional partial (1-3), -2 any wrong, 0 unattempted
+- Integer: +4 correct, -1 incorrect, 0 unattempted
+
+JEE Advanced Marking:
+- SCQ: +3 correct, -1 incorrect, 0 unattempted
+- MCQ: +4 all correct, proportional partial (1-3), -2 any wrong, 0 unattempted
+- Match Column: +3 perfect match, +1 per correct match, -1 any wrong, 0 unattempted
+- Integer: +3 correct, 0 incorrect, 0 unattempted
+
+Features:
+- Automatic marking scheme selection based on test type
+- Manual override for custom marking schemes
+- Detailed score breakdown by question type
+- Section-wise scoring if applicable
+```
+
+### 6. Answer Key Processing
+```
+Handle answer keys with box extraction approach:
+- Allow manual box selection for answer key sections
+- Extract answer key as images or text
+- Parse answers in various formats (A/B/C/D, 1/2/3/4, numbers)
+- Support answer key corrections and updates
+- Validate answer key completeness
+- Handle complex answer formats for Match the Column
+- Cross-reference with question types
+- Generate answer key summary reports
+```
+
+### 7. Evaluation and Results
+```
+Process answers and generate comprehensive results:
+- Compare user answers with extracted answer key
+- Apply appropriate marking scheme based on question type
+- Calculate total score and percentage
+- Generate section-wise analysis
+- Track time spent per question
+- Provide detailed question-wise breakdown
+- Show correct vs incorrect answers
+- Generate performance analytics
+- Export results in multiple formats (PDF, Excel, JSON)
+```
+
+## Technical Implementation
+
+### 8. Core Technology Stack
+```
+Optimized for automatic box detection with high accuracy:
+
+Backend:
+- Python 3.8+ with FastAPI for API endpoints
+- PyMuPDF for PDF processing and annotation detection
+- OpenCV for image processing and shape detection
+- Tesseract OCR for text extraction from images
+- PIL/Pillow for image manipulation
+- SQLite for data storage and question management
+
+PDF Box Detection:
+- PyMuPDF for detecting PDF annotations and shapes
+- pdf2image for converting PDF pages to images for computer vision
+- OpenCV for detecting rectangular shapes in images
+- Custom algorithms for box validation and filtering
+- Coordinate mapping between PDF and image space
+
+Frontend:
+- HTML5 for PDF preview and detected box visualization
+- JavaScript for box verification and editing
+- PDF.js for PDF display
+- CSS for responsive design
+- Bootstrap for UI components
+
+Machine Learning (Lightweight):
+- spaCy for text processing and pattern recognition
+- scikit-learn for simple classification tasks
+- Custom regex patterns for question type detection
+- Rule-based classification as primary method
+```
+
+### 9. Workflow Implementation
+```
+Step-by-step automated workflow:
+
+1. PDF Upload with Pre-drawn Boxes:
+   - User uploads PDF with questions already boxed
+   - System automatically detects all rectangular boxes
+   - Display detected boxes with numbering
+   - Allow manual verification and adjustment if needed
+
+2. Automatic Box Detection:
+   - Scan PDF for rectangular annotations/shapes
+   - Extract box coordinates and sort by position
+   - Handle various box types (rectangles, highlights, annotations)
+   - Generate box inventory with metadata
+
+3. Image Extraction:
+   - Extract each detected box as high-quality image
+   - Apply image enhancement if needed
+   - Store images with auto-generated question numbers
+   - Create thumbnail previews for verification
+
+4. Question Analysis:
+   - Analyze each extracted image using OCR
+   - Classify question type using pattern matching
+   - Assign confidence scores to classifications
+   - Flag uncertain classifications for manual review
+
+5. Test Interface Generation:
+   - Create appropriate input interface for each question
+   - Display questions in sequence with navigation
+   - Implement timer and progress tracking
+   - Save answers automatically
+
+6. Answer Key Processing:
+   - Support separate answer key PDF with boxes
+   - Extract and parse answer key data automatically
+   - Validate answer key format and completeness
+   - Cross-reference with question types
+
+7. Evaluation and Results:
+   - Compare user answers with answer key
+   - Apply marking scheme based on question types
+   - Calculate scores and generate detailed reports
+   - Provide performance analytics and insights
+```
+
+## Additional Implementation Details
+
+### Box Detection Methods
+```
+Support multiple ways users can create boxes in PDFs:
+
+1. PDF Annotation Boxes:
+   - Detect rectangle annotations added via PDF editors
+   - Support various annotation types (Square, Rectangle, Highlight)
+   - Extract annotation properties (color, thickness, coordinates)
+   - Handle annotations from Adobe Reader, Foxit, etc.
+
+2. Drawn Shape Detection:
+   - Convert PDF pages to images
+   - Use OpenCV to detect rectangular shapes
+   - Filter shapes by size and aspect ratio
+   - Remove false positives (page borders, tables, etc.)
+
+3. Highlight Box Detection:
+   - Detect highlight annotations that form rectangles
+   - Extract highlighted regions as question boxes
+   - Handle different highlight colors and transparencies
+   - Validate highlight area dimensions
+
+4. Text Box Detection:
+   - Detect text box annotations
+   - Extract text box boundaries as question regions
+   - Handle various text box styles and borders
+   - Support invisible text boxes (boundary only)
+
+Detection Validation:
+- Minimum box size filtering
+- Aspect ratio validation (reasonable question proportions)
+- Overlap detection and handling
+- Manual verification interface for edge cases
+```
+
+## Platform Deployment Options
+
+### 10. Windows 11 Local Deployment
+```
+System Requirements:
+- Windows 11 with 8GB+ RAM
+- Python 3.8+ with pip
+- 2GB free disk space for dependencies
+
+Installation:
+1. Install Python dependencies: opencv-python, tesseract, PyMuPDF, FastAPI
+2. Install Tesseract OCR executable
+3. Set up SQLite database
+4. Configure local file storage for PDFs and images
+5. Run with: python main.py
+
+Features:
+- Full offline functionality
+- Local file processing
+- No internet required after setup
+- Fast processing with local resources
+```
+
+### 11. Replit Deployment
+```
+Resource Optimization:
+- Use replit.nix for dependency management
+- Implement efficient image processing
+- Use background tasks for heavy operations
+- Cache processed results
+- Optimize for 512MB RAM limit
+
+Files Structure:
+- main.py: FastAPI application
+- pdf_processor.py: PDF and image handling
+- question_analyzer.py: Question type detection
+- templates/: HTML templates for UI
+- static/: CSS, JS, and image files
+```
+
+### 12. Render Free Tier Deployment
+```
+Deployment Configuration:
+- Use Docker container for consistent environment
+- Implement health checks and auto-restart
+- Use persistent storage for uploaded files
+- Optimize for cold start performance
+- Handle 15-minute timeout limits
+
+Required Files:
+- Dockerfile: Container setup
+- render.yaml: Service configuration
+- requirements.txt: Python dependencies
+- startup.sh: Environment initialization
+```
+
+## Accuracy and Quality Assurance
+
+### 13. Quality Control Measures
+```
+Ensure high accuracy with manual box selection:
+- User controls question boundaries (eliminates parsing errors)
+- High-resolution image extraction preserves detail
+- Multiple detection methods for question type analysis
+- Confidence scoring for uncertain classifications
+- Manual review interface for edge cases
+- Validation against known answer patterns
+- Error logging and feedback system
+```
+
+### 14. Testing and Validation
+```
+Comprehensive testing approach:
+- Test with actual JEE papers from multiple years
+- Validate question type detection accuracy
+- Test answer key parsing with various formats
+- Verify marking scheme calculations
+- Test UI responsiveness and usability
+- Validate image extraction quality
+- Test deployment on all target platforms
+```
+
+## Success Metrics
+```
+- Question extraction accuracy: >99% (manual box selection)
+- Question type detection: >95% (with confidence scoring)
+- Answer key parsing: >98% (with validation)
+- Image quality preservation: >99% (high-resolution extraction)
+- UI responsiveness: <2 seconds for all operations
+- Marking scheme accuracy: 100% (mathematical calculation)
+- User satisfaction: Easy workflow with minimal learning curve
+```
+
+## Deliverables
+```
+1. Complete source code with detailed documentation
+2. User manual with step-by-step instructions
+3. Installation guides for all target platforms
+4. Test suite with sample PDFs and expected outputs
+5. Question type detection models and patterns
+6. Database schema and setup scripts
+7. API documentation for all endpoints
+8. Docker containers for easy deployment
+```
+
+This tool provides maximum accuracy by letting users manually select question boundaries while automating the analysis and test delivery process. The manual box selection eliminates PDF parsing errors while maintaining efficiency for small user groups.

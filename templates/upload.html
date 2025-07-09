@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Upload PDF - PDF Question Extraction Tool{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i class="fas fa-upload me-2"></i>Upload PDF with Pre-drawn Boxes
+                </h3>
+            </div>
+            <div class="card-body">
+                <!-- Instructions -->
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle me-2"></i>Instructions</h5>
+                    <ul class="mb-0">
+                        <li>Use any PDF editor (Adobe Reader, Foxit, etc.) to draw rectangular boxes around questions</li>
+                        <li>Make sure boxes completely enclose each question</li>
+                        <li>Supported box types: Rectangle annotations, Highlight boxes, Drawn shapes</li>
+                        <li>Maximum file size: 50MB</li>
+                    </ul>
+                </div>
+
+                <!-- Upload Form -->
+                <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="test_name" class="form-label">Test Name *</label>
+                        <input type="text" class="form-control" id="test_name" name="test_name" required>
+                        <div class="invalid-feedback">
+                            Please provide a test name.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="marking_scheme" class="form-label">Marking Scheme *</label>
+                        <select class="form-select" id="marking_scheme" name="marking_scheme" required>
+                            <option value="jee_main">JEE Main</option>
+                            <option value="jee_advanced">JEE Advanced</option>
+                        </select>
+                        <div class="form-text">
+                            This determines the marking scheme for evaluation
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="pdf_file" class="form-label">PDF File *</label>
+                        <input type="file" class="form-control" id="pdf_file" name="pdf_file" accept=".pdf" required>
+                        <div class="invalid-feedback">
+                            Please select a PDF file.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-upload me-2"></i>Upload and Process PDF
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Marking Scheme Information -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">JEE Main Marking</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><strong>SCQ:</strong> +4 correct, -1 incorrect</li>
+                            <li><strong>MCQ:</strong> +4 all correct, proportional partial, -2 any wrong</li>
+                            <li><strong>Integer:</strong> +4 correct, -1 incorrect</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">JEE Advanced Marking</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><strong>SCQ:</strong> +3 correct, -1 incorrect</li>
+                            <li><strong>MCQ:</strong> +4 all correct, proportional partial, -2 any wrong</li>
+                            <li><strong>Integer:</strong> +3 correct, 0 incorrect</li>
+                            <li><strong>Match Column:</strong> +3 perfect, +1 per correct, -1 wrong</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// File size validation
+document.getElementById('pdf_file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const fileSize = file.size / (1024 * 1024); // Convert to MB
+        if (fileSize > 50) {
+            alert('File size must be less than 50MB');
+            e.target.value = '';
+        }
+    }
+});
+</script>
+{% endblock %}

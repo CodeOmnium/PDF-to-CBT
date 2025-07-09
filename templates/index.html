@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Home - PDF Question Extraction Tool{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Hero Section -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 mb-3">
+                <i class="fas fa-file-pdf text-primary me-3"></i>
+                PDF Question Extraction Tool
+            </h1>
+            <p class="lead">
+                Automatically detect pre-drawn boxes, extract questions, and create interactive test interfaces for JEE preparation
+            </p>
+        </div>
+
+        <!-- Features -->
+        <div class="row mb-5">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-search fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">Automatic Detection</h5>
+                        <p class="card-text">Detects pre-drawn rectangular boxes in PDFs using advanced computer vision</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-brain fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Question Analysis</h5>
+                        <p class="card-text">Analyzes question types: SCQ, MCQ, Integer, and Match the Column</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Smart Evaluation</h5>
+                        <p class="card-text">Implements JEE Main/Advanced marking schemes with detailed analytics</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-5">
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-plus-circle me-2"></i>Create New Test
+                        </h5>
+                        <p class="card-text">Upload a PDF with pre-drawn question boxes and create a new test</p>
+                        <a href="{{ url_for('upload_pdf') }}" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>Upload PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-list me-2"></i>View All Tests
+                        </h5>
+                        <p class="card-text">Browse all created tests and their performance analytics</p>
+                        <a href="{{ url_for('all_tests') }}" class="btn btn-secondary">
+                            <i class="fas fa-eye me-2"></i>View Tests
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Tests -->
+        {% if recent_tests %}
+        <div class="mb-5">
+            <h3 class="mb-3">
+                <i class="fas fa-clock me-2"></i>Recent Tests
+            </h3>
+            <div class="row">
+                {% for test in recent_tests %}
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ test.name }}</h6>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>{{ test.created_at.strftime('%B %d, %Y') }}
+                                </small>
+                            </p>
+                            <p class="card-text">
+                                <span class="badge bg-info">{{ test.total_questions }} questions</span>
+                                <span class="badge bg-secondary">{{ test.marking_scheme.replace('_', ' ').title() }}</span>
+                            </p>
+                            <a href="{{ url_for('test_interface', test_id=test.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-play me-1"></i>Take Test
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- How It Works -->
+        <div class="mb-5">
+            <h3 class="mb-4">
+                <i class="fas fa-question-circle me-2"></i>How It Works
+            </h3>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <span class="text-white fw-bold">1</span>
+                        </div>
+                        <h6>Draw Boxes</h6>
+                        <p class="small">Use any PDF editor to draw rectangular boxes around questions</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <span class="text-white fw-bold">2</span>
+                        </div>
+                        <h6>Upload PDF</h6>
+                        <p class="small">Upload your PDF and let the system detect all boxes automatically</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <span class="text-white fw-bold">3</span>
+                        </div>
+                        <h6>Analysis</h6>
+                        <p class="small">Questions are analyzed and appropriate interfaces are created</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <span class="text-white fw-bold">4</span>
+                        </div>
+                        <h6>Take Test</h6>
+                        <p class="small">Students can take the test and get detailed performance reports</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

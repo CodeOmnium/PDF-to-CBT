@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Test Results - {{ session.student_name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Results Header -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3 class="mb-1">{{ results.test_name }}</h3>
+                        <p class="text-muted mb-0">{{ results.student_name }}</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="display-4 text-primary mb-1">{{ "%.1f"|format(results.evaluation_summary.percentage) }}%</div>
+                        <p class="text-muted mb-0">{{ results.evaluation_summary.total_score }} / {{ results.evaluation_summary.total_possible }} marks</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score Summary -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h4 class="text-success">{{ results.evaluation_summary.total_score }}</h4>
+                        <p class="mb-0">Total Score</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h4 class="text-info">{{ results.evaluation_summary.total_possible }}</h4>
+                        <p class="mb-0">Total Marks</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h4 class="text-warning">{{ results.question_analysis|selectattr('is_correct', 'equalto', true)|list|length }}</h4>
+                        <p class="mb-0">Correct</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h4 class="text-danger">{{ results.question_analysis|selectattr('is_correct', 'equalto', false)|list|length }}</h4>
+                        <p class="mb-0">Incorrect</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Type Analysis -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Question Type Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for q_type, stats in results.evaluation_summary.type_statistics.items() %}
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-secondary">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">{{ q_type }}</h6>
+                                <div class="mb-2">
+                                    <span class="badge bg-success">{{ stats.correct }}</span> / 
+                                    <span class="badge bg-secondary">{{ stats.total_questions }}</span>
+                                </div>
+                                <div class="progress mb-2" style="height: 20px;">
+                                    <div class="progress-bar bg-success" 
+                                         style="width: {{ (stats.correct / stats.total_questions * 100) if stats.total_questions > 0 else 0 }}%">
+                                        {{ "%.0f"|format((stats.correct / stats.total_questions * 100) if stats.total_questions > 0 else 0) }}%
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ stats.marks_obtained }} marks</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Insights -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>Performance Insights
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <ul class="list-unstyled">
+                            {% for insight in results.performance_insights %}
+                            <li class="mb-2">
+                                <i class="fas fa-arrow-right text-primary me-2"></i>{{ insight }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">Time Analysis</h6>
+                                <p class="mb-1">
+                                    <strong>Total Time:</strong> {{ (results.time_analysis.total_time // 60)|int }}m {{ (results.time_analysis.total_time % 60)|int }}s
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Avg per Question:</strong> {{ (results.time_analysis.average_time_per_question // 60)|int }}m {{ (results.time_analysis.average_time_per_question % 60)|int }}s
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Question Analysis -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Detailed Question Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Q#</th>
+                                <th>Type</th>
+                                <th>Your Answer</th>
+                                <th>Correct Answer</th>
+                                <th>Result</th>
+                                <th>Marks</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for question in results.question_analysis %}
+                            <tr class="{{ 'table-success' if question.is_correct else 'table-danger' }}">
+                                <td>
+                                    <span class="badge bg-primary">{{ question.question_number }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ question.question_type }}</span>
+                                </td>
+                                <td>
+                                    <code>{{ question.user_answer or 'Not Answered' }}</code>
+                                </td>
+                                <td>
+                                    <code>{{ question.correct_answer }}</code>
+                                </td>
+                                <td>
+                                    {% if question.is_correct %}
+                                        <i class="fas fa-check text-success"></i> Correct
+                                    {% else %}
+                                        <i class="fas fa-times text-danger"></i> Incorrect
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if question.marks_awarded > 0 else 'danger' if question.marks_awarded < 0 else 'secondary' }}">
+                                        {{ question.marks_awarded }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {{ (question.time_spent // 60)|int }}m {{ (question.time_spent % 60)|int }}s
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="text-center mt-4">
+            <a href="{{ url_for('test_interface', test_id=session.test_id) }}" class="btn btn-secondary">
+                <i class="fas fa-redo me-2"></i>Take Test Again
+            </a>
+            <a href="{{ url_for('all_tests') }}" class="btn btn-primary">
+                <i class="fas fa-list me-2"></i>View All Tests
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Chart visualization for results
+document.addEventListener('DOMContentLoaded', function() {
+    // You can add Chart.js visualization here
+    console.log('Results loaded');
+});
+</script>
+{% endblock %}

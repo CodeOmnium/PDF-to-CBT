@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Answer Key - {{ test.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i class="fas fa-key me-2"></i>Answer Key - {{ test.name }}
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle me-2"></i>Instructions</h6>
+                    <ul class="mb-0">
+                        <li>Set the correct answers for each question</li>
+                        <li>For SCQ: Select single correct option (A, B, C, or D)</li>
+                        <li>For MCQ: Select multiple correct options</li>
+                        <li>For Integer: Enter the correct integer value</li>
+                        <li>For Match Column: Map each item in Column I to Column II</li>
+                    </ul>
+                </div>
+
+                <form method="POST" id="answerKeyForm">
+                    {% for question in questions %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h6 class="mb-0">
+                                        Question {{ question.question_number }}
+                                        <span class="badge bg-{{ 'success' if question.question_type == 'SCQ' else 'info' if question.question_type == 'MCQ' else 'warning' if question.question_type == 'Integer' else 'secondary' }}">
+                                            {{ question.question_type }}
+                                        </span>
+                                    </h6>
+                                </div>
+                                <div class="col-md-4 text-md-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="previewQuestion({{ question.id }})">
+                                        <i class="fas fa-eye"></i> Preview
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <img src="{{ url_for('get_question_image', question_id=question.id) }}" 
+                                         class="img-fluid rounded" 
+                                         alt="Question {{ question.question_number }}">
+                                </div>
+                                <div class="col-md-6">
+                                    {% if question.question_type == 'SCQ' %}
+                                    <!-- Single Correct Question -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Correct Answer:</label>
+                                        <div class="d-flex gap-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="answer_{{ question.id }}" value="A" id="q{{ question.id }}_A">
+                                                <label class="form-check-label" for="q{{ question.id }}_A">A</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="answer_{{ question.id }}" value="B" id="q{{ question.id }}_B">
+                                                <label class="form-check-label" for="q{{ question.id }}_B">B</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="answer_{{ question.id }}" value="C" id="q{{ question.id }}_C">
+                                                <label class="form-check-label" for="q{{ question.id }}_C">C</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="answer_{{ question.id }}" value="D" id="q{{ question.id }}_D">
+                                                <label class="form-check-label" for="q{{ question.id }}_D">D</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {% elif question.question_type == 'MCQ' %}
+                                    <!-- Multiple Correct Question -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Correct Answers (select all that apply):</label>
+                                        <div class="d-flex gap-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="answer_{{ question.id }}" value="A" id="q{{ question.id }}_A">
+                                                <label class="form-check-label" for="q{{ question.id }}_A">A</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="answer_{{ question.id }}" value="B" id="q{{ question.id }}_B">
+                                                <label class="form-check-label" for="q{{ question.id }}_B">B</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="answer_{{ question.id }}" value="C" id="q{{ question.id }}_C">
+                                                <label class="form-check-label" for="q{{ question.id }}_C">C</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="answer_{{ question.id }}" value="D" id="q{{ question.id }}_D">
+                                                <label class="form-check-label" for="q{{ question.id }}_D">D</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {% elif question.question_type == 'Integer' %}
+                                    <!-- Integer Type Question -->
+                                    <div class="mb-3">
+                                        <label class="form-label" for="answer_{{ question.id }}">Correct Answer (Integer):</label>
+                                        <input type="number" class="form-control" name="answer_{{ question.id }}" id="answer_{{ question.id }}" 
+                                               placeholder="Enter integer value" min="0" max="9999">
+                                    </div>
+
+                                    {% elif question.question_type == 'MatchColumn' %}
+                                    <!-- Match the Column -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Match Column I to Column II:</label>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="mb-2">
+                                                    <label class="form-label">A matches with:</label>
+                                                    <select class="form-select" name="match_{{ question.id }}_A">
+                                                        <option value="">Select</option>
+                                                        <option value="p">p</option>
+                                                        <option value="q">q</option>
+                                                        <option value="r">r</option>
+                                                        <option value="s">s</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label">B matches with:</label>
+                                                    <select class="form-select" name="match_{{ question.id }}_B">
+                                                        <option value="">Select</option>
+                                                        <option value="p">p</option>
+                                                        <option value="q">q</option>
+                                                        <option value="r">r</option>
+                                                        <option value="s">s</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="mb-2">
+                                                    <label class="form-label">C matches with:</label>
+                                                    <select class="form-select" name="match_{{ question.id }}_C">
+                                                        <option value="">Select</option>
+                                                        <option value="p">p</option>
+                                                        <option value="q">q</option>
+                                                        <option value="r">r</option>
+                                                        <option value="s">s</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label">D matches with:</label>
+                                                    <select class="form-select" name="match_{{ question.id }}_D">
+                                                        <option value="">Select</option>
+                                                        <option value="p">p</option>
+                                                        <option value="q">q</option>
+                                                        <option value="r">r</option>
+                                                        <option value="s">s</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if question.ocr_text %}
+                                    <div class="mt-3">
+                                        <button type="button" class="btn btn-sm btn-outline-info" onclick="showOCRText({{ question.id }})">
+                                            <i class="fas fa-file-alt"></i> View OCR Text
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Save Answer Key
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Question Preview Modal -->
+<div class="modal fade" id="questionPreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Question Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="questionPreviewImage" class="img-fluid" alt="Question Preview">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- OCR Text Modal -->
+<div class="modal fade" id="ocrTextModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">OCR Text</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="ocrTextContent" class="bg-light p-3 rounded"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Questions data
+const questions = {{ questions|tojson }};
+
+function previewQuestion(questionId) {
+    const modal = new bootstrap.Modal(document.getElementById('questionPreviewModal'));
+    const img = document.getElementById('questionPreviewImage');
+    img.src = `/api/get_question_image/${questionId}`;
+    modal.show();
+}
+
+function showOCRText(questionId) {
+    const modal = new bootstrap.Modal(document.getElementById('ocrTextModal'));
+    const content = document.getElementById('ocrTextContent');
+    const question = questions.find(q => q.id === questionId);
+    content.textContent = question.ocr_text || 'No text extracted';
+    modal.show();
+}
+
+// Form validation
+document.getElementById('answerKeyForm').addEventListener('submit', function(e) {
+    let isValid = true;
+    const requiredFields = this.querySelectorAll('input[required], select[required]');
+    
+    requiredFields.forEach(field => {
+        if (!field.value) {
+            isValid = false;
+            field.classList.add('is-invalid');
+        } else {
+            field.classList.remove('is-invalid');
+        }
+    });
+    
+    if (!isValid) {
+        e.preventDefault();
+        alert('Please fill in all required fields');
+    }
+});
+</script>
+{% endblock %}

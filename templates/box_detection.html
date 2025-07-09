@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Box Detection Results - PDF Question Extraction Tool{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-search me-2"></i>Box Detection Results
+            </h2>
+            <div>
+                <a href="{{ url_for('answer_key', test_id=test.id) }}" class="btn btn-warning">
+                    <i class="fas fa-key me-2"></i>Set Answer Key
+                </a>
+                <a href="{{ url_for('test_interface', test_id=test.id) }}" class="btn btn-primary">
+                    <i class="fas fa-play me-2"></i>Take Test
+                </a>
+            </div>
+        </div>
+
+        <!-- Test Information -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">{{ test.name }}</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Total Questions:</strong> {{ test.total_questions }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Marking Scheme:</strong> {{ test.marking_scheme.replace('_', ' ').title() }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Created:</strong> {{ test.created_at.strftime('%B %d, %Y') }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>PDF File:</strong> {{ test.pdf_filename }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detection Summary -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-primary">{{ boxes|length }}</h3>
+                        <p class="mb-0">Boxes Detected</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-success">{{ analysis_results|selectattr('question_type', 'equalto', 'SCQ')|list|length }}</h3>
+                        <p class="mb-0">SCQ Questions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-info">{{ analysis_results|selectattr('question_type', 'equalto', 'MCQ')|list|length }}</h3>
+                        <p class="mb-0">MCQ Questions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-warning">{{ analysis_results|selectattr('question_type', 'equalto', 'Integer')|list|length }}</h3>
+                        <p class="mb-0">Integer Questions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions List -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Extracted Questions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Question #</th>
+                                <th>Type</th>
+                                <th>Confidence</th>
+                                <th>Page</th>
+                                <th>Preview</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in analysis_results %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-primary">{{ loop.index }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if result.question_type == 'SCQ' else 'info' if result.question_type == 'MCQ' else 'warning' if result.question_type == 'Integer' else 'secondary' }}">
+                                        {{ result.question_type }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar {% if result.confidence > 0.7 %}bg-success{% elif result.confidence > 0.4 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             style="width: {{ result.confidence * 100 }}%">
+                                            {{ "%.0f"|format(result.confidence * 100) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ boxes[loop.index0].page if boxes[loop.index0] else 'N/A' }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="previewQuestion({{ loop.index }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-info" onclick="showOCRText({{ loop.index }})">
+                                        <i class="fas fa-file-alt"></i> OCR
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Question Preview Modal -->
+<div class="modal fade" id="questionPreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Question Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="questionPreviewImage" class="img-fluid" alt="Question Preview">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- OCR Text Modal -->
+<div class="modal fade" id="ocrTextModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Extracted Text (OCR)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="ocrTextContent" class="bg-light p-3 rounded"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Analysis results data
+const analysisResults = {{ analysis_results|tojson }};
+
+function previewQuestion(questionNumber) {
+    const modal = new bootstrap.Modal(document.getElementById('questionPreviewModal'));
+    const img = document.getElementById('questionPreviewImage');
+    img.src = `/api/get_question_image/${questionNumber}`;
+    modal.show();
+}
+
+function showOCRText(questionNumber) {
+    const modal = new bootstrap.Modal(document.getElementById('ocrTextModal'));
+    const content = document.getElementById('ocrTextContent');
+    const result = analysisResults[questionNumber - 1];
+    content.textContent = result.ocr_text || 'No text extracted';
+    modal.show();
+}
+</script>
+{% endblock %}
