@@ -67,3 +67,4 @@ psycopg2-binary==2.9.9
 # Cloud Storage (if needed)
 # boto3==1.34.0
 # google-cloud-storage==2.10.0
+fitz
