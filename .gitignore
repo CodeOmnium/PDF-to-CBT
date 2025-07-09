@@ -423,3 +423,5 @@ yarn-error.log*
 *.gz
 *.bz2
 *.xz
+
+attached_assets/
